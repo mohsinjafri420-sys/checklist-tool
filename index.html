@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0e10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Checklists">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>EFB · Checklists</title>
+<style>
+  :root{
+    --bg:#0a0e10;--panel:#12181b;--panel-2:#171f23;--line:#243036;--line-soft:#1b2429;
+    --txt:#d6e2e6;--txt-dim:#7d8f96;--txt-faint:#52646b;
+    --grn:#36e08a;--grn-deep:#0e7a47;--amb:#ffb43d;--red:#ff5c5c;
+    --mono:ui-monospace,"SF Mono","SFMono-Regular","Menlo","Cascadia Mono","Roboto Mono","Consolas",monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg);color:var(--txt);font-family:var(--mono);overscroll-behavior:none;
+    background-image:
+      radial-gradient(120% 60% at 50% -10%, rgba(54,224,138,.06), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0px, rgba(255,255,255,.012) 1px, transparent 1px, transparent 3px);
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+  .strip{display:flex;align-items:center;gap:10px;padding:12px 16px 10px;border-bottom:1px solid var(--line);
+    font-size:11px;letter-spacing:.18em;color:var(--txt-faint);text-transform:uppercase;
+    position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--bg),rgba(10,14,16,.92));backdrop-filter:blur(6px);}
+  .strip .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);box-shadow:0 0 8px var(--grn);}
+  .strip .sep{flex:1;}
+  .strip b{color:var(--txt-dim);font-weight:400;}
+  .head{padding:18px 16px 10px;}
+  .crumb{display:flex;align-items:center;gap:10px;margin-bottom:10px;min-height:22px;}
+  .back{appearance:none;background:transparent;border:1px solid var(--line);color:var(--txt-dim);
+    font-family:var(--mono);font-size:12px;letter-spacing:.1em;padding:7px 12px;border-radius:8px;
+    cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s;}
+  .back:active{transform:scale(.96);background:var(--panel);}
+  .crumb .ctx{font-size:11px;letter-spacing:.16em;color:var(--txt-faint);text-transform:uppercase;}
+  h1{margin:0;font-size:26px;letter-spacing:.02em;font-weight:600;color:var(--txt);}
+  .sub{margin:4px 0 0;font-size:12px;letter-spacing:.16em;color:var(--txt-dim);text-transform:uppercase;}
+  .wrap{padding:6px 16px 40px;flex:1;}
+  .fleet{display:flex;flex-direction:column;gap:12px;margin-top:6px;}
+  .tile{position:relative;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border-radius:14px;padding:18px;cursor:pointer;overflow:hidden;transition:.16s;text-align:left;width:100%;font-family:var(--mono);color:inherit;}
+  .tile:active{transform:scale(.985);border-color:var(--grn-deep);}
+  .tile .reg{position:absolute;top:0;right:0;font-size:10px;letter-spacing:.2em;color:var(--txt-faint);padding:8px 12px;text-transform:uppercase;}
+  .tile .acn{font-size:32px;font-weight:700;letter-spacing:.04em;line-height:1;}
+  .tile .acm{font-size:12px;letter-spacing:.24em;color:var(--txt-dim);text-transform:uppercase;margin-top:8px;}
+  .tile .acd{font-size:11px;color:var(--txt-faint);margin-top:10px;letter-spacing:.08em;}
+  .tile .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--grn));box-shadow:0 0 12px var(--accent,var(--grn));opacity:.85;}
+  .phases{display:flex;flex-direction:column;gap:9px;margin-top:6px;}
+  .phase{display:flex;align-items:center;gap:14px;border:1px solid var(--line);background:var(--panel);
+    border-radius:12px;padding:15px 16px;cursor:pointer;transition:.15s;width:100%;font-family:var(--mono);color:inherit;text-align:left;}
+  .phase:active{transform:scale(.99);background:var(--panel-2);}
+  .phase .idx{font-size:12px;color:var(--txt-faint);min-width:22px;letter-spacing:.05em;}
+  .phase .pname{flex:1;font-size:14px;letter-spacing:.1em;text-transform:uppercase;}
+  .phase.emer .pname{color:var(--red);}
+  .phase .pct{font-size:11px;color:var(--txt-dim);letter-spacing:.08em;font-variant-numeric:tabular-nums;}
+  .phase.done .pname{color:var(--txt-dim);}
+  .phase.done{border-color:var(--grn-deep);}
+  .phase.emer.done{border-color:#7a1f1f;}
+  .phase .tick{width:18px;height:18px;border-radius:5px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:12px;flex-shrink:0;}
+  .phase.done .tick{background:var(--grn);border-color:var(--grn);box-shadow:0 0 10px var(--grn-deep);}
+  .phase.emer.done .tick{background:var(--red);border-color:var(--red);box-shadow:0 0 10px #7a1f1f;}
+  .phase .tick svg{width:11px;height:11px;display:none;}
+  .phase.done .tick svg{display:block;}
+  .pbar{height:5px;border-radius:99px;background:var(--line-soft);overflow:hidden;margin:14px 0 18px;}
+  .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--grn-deep),var(--grn));box-shadow:0 0 10px var(--grn-deep);width:0;transition:width .35s cubic-bezier(.2,.8,.2,1);}
+  .items{display:flex;flex-direction:column;gap:8px;}
+  .item{display:flex;flex-direction:column;align-items:stretch;border:1px solid var(--line);background:var(--panel);
+    border-radius:12px;padding:14px;cursor:pointer;transition:.14s;position:relative;overflow:hidden;}
+  .item:active{transform:scale(.99);}
+  .item .row{display:flex;align-items:center;gap:14px;}
+  .item .box{width:26px;height:26px;flex-shrink:0;border-radius:7px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;transition:.18s;color:var(--bg);}
+  .item .box svg{width:15px;height:15px;opacity:0;transform:scale(.4);transition:.18s;}
+  .item .lbl{flex:1;display:flex;align-items:baseline;gap:6px;min-width:0;}
+  .item .chal{font-size:14.5px;letter-spacing:.04em;color:var(--txt);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
+  .item .lead{flex:1;border-bottom:1.5px dotted var(--line);transform:translateY(-3px);min-width:8px;}
+  .item .resp{font-size:13px;letter-spacing:.08em;color:var(--amb);text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+  .item .subs{margin:9px 0 1px 40px;display:flex;flex-wrap:wrap;gap:4px 16px;}
+  .item .subs span{font-size:10.5px;letter-spacing:.1em;color:var(--txt-faint);text-transform:uppercase;}
+  .item.on{border-color:var(--grn-deep);background:linear-gradient(90deg,rgba(54,224,138,.08),var(--panel) 40%);}
+  .item.on .box{background:var(--grn);border-color:var(--grn);box-shadow:0 0 12px var(--grn-deep);}
+  .item.on .box svg{opacity:1;transform:scale(1);}
+  .item.on .chal{color:var(--txt-dim);}
+  .item.on .resp{color:var(--grn);}
+  .complete{margin-top:18px;border:1px solid var(--grn-deep);border-radius:12px;
+    background:linear-gradient(180deg,rgba(54,224,138,.10),rgba(54,224,138,.02));padding:16px;text-align:center;display:none;animation:pop .3s ease;}
+  .complete.show{display:block;}
+  .complete .ct{font-size:15px;letter-spacing:.22em;color:var(--grn);text-transform:uppercase;}
+  .complete .cs{font-size:11px;letter-spacing:.1em;color:var(--txt-dim);margin-top:6px;}
+  @keyframes pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .actions{display:flex;gap:10px;margin-top:20px;}
+  .btn{flex:1;appearance:none;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    padding:14px;border-radius:11px;border:1px solid var(--line);background:var(--panel);color:var(--txt-dim);cursor:pointer;transition:.15s;}
+  .btn:active{transform:scale(.97);}
+  .btn.primary{border-color:var(--grn-deep);color:var(--grn);background:linear-gradient(180deg,rgba(54,224,138,.12),transparent);}
+  .btn.primary:disabled{opacity:.35;color:var(--txt-faint);border-color:var(--line);background:var(--panel);cursor:default;}
+  .note{font-size:10.5px;line-height:1.7;color:var(--txt-faint);letter-spacing:.05em;text-align:center;padding:22px 24px 28px;border-top:1px solid var(--line-soft);margin-top:8px;}
+  .fade{animation:fade .22s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="strip"><span class="dot"></span><span>EFB · CHECKLIST</span><span class="sep"></span><b id="clock">--:--Z</b></div>
+  <div id="view"></div>
+</div>
+
+<script>
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M15 18l-6-6 6-6"/></svg>';
+const ARROW_R = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M9 18l6-6-6-6"/></svg>';
+
+/* item = [challenge, response, subs?] ; phase = {phase, items, emer?} */
+const FLEET = [
+  { id:'a320', name:'A320', maker:'Airbus', desc:'Narrowbody · A319/320/321', accent:'#36e08a',
+    lists:[
+      {phase:'Cockpit Preparation', items:[
+        ['Gear Pins & Covers','Removed'],['Fuel Quantity','___ kg/lb'],['Seat Belts','On'],['ADIRS','Nav'],['Baro Ref','Set (Both)'],
+      ]},
+      {phase:'Before Start', items:[
+        ['Parking Brake','Set'],['T.O Speeds & Thrust','Set (Both)'],['Windows','Closed (Both)'],['Beacon','On'],
+      ]},
+      {phase:'After Start', items:[
+        ['Anti Ice','As Rqrd'],['ECAM Status','Checked'],['Pitch Trim','% Set'],['Rudder Trim','Neutral'],
+      ]},
+      {phase:'Taxi', items:[
+        ['Flight Control','Checked (Both)'],['Flaps Setting','Conf ___ (Both)'],['Radar & PWS','On & Auto'],['Eng Mode Sel','As Rqrd'],
+        ['ECAM Memo','T.O No Blue',['Auto Brk Max','Signs On','Cabin Ready','Flaps T.O','T.O Config Norm']],
+      ]},
+      {phase:'Lineup', items:[
+        ['T.O Rwy','Conf ___ (Both)'],['TCAS','TA/RA'],['Pack 1 & 2','On'],
+      ]},
+      {phase:'Departure Change', items:[
+        ['Rwy & SID','Set'],['Flaps Setting','Conf ___ (Both)'],['T.O Speeds & Thrust','Set (Both)'],['FCU Alt','Set'],
+      ]},
+      {phase:'Approach', items:[
+        ['Baro Ref','Set (Both)'],['Seat Belts','On'],['Minimum','Set'],['Auto Brake','As Rqrd'],['Eng Mode Sel','As Rqrd'],
+      ]},
+      {phase:'Landing', items:[
+        ['Go-Around Alt','___ ft Set'],['Cabin Crew','Advised'],
+        ['ECAM Memo','Ldg No Blue',['Ldg Gear Dn','Signs On','Cabin Ready','Splrs Arm','Flaps Set']],
+      ]},
+      {phase:'After Landing', items:[
+        ['Radar & PWS','Off'],
+      ]},
+      {phase:'Parking', items:[
+        ['Park Brk or Chocks','Set'],['Engines','Off'],['Wing Lights','Off'],['Fuel Pumps','Off'],
+      ]},
+      {phase:'Securing the Aircraft', items:[
+        ['Oxygen','Off'],['Emer Exit Lt','Off'],['EFBs','Off'],['Batteries','Off'],
+      ]},
+    ]},
+
+  { id:'a330', name:'A330', maker:'Airbus', desc:'Widebody · A330-200/300', accent:'#4fd6e0',
+    lists:[
+      {phase:'Before Start', items:[
+        ['Cockpit Prep','Complete (Both)'],['Gear Pins and Covers','Removed'],['Signs','On / Auto'],['ADIRS','Nav'],
+        ['Fuel Quantity','___ kg/lb'],['TO Data','Set'],['Baro Ref','Set (Both)'],['Windows / Doors','Closed (Both)'],
+        ['Beacon','On'],['Thrust Levers','Idle'],['Parking Brake','As Rqrd'],
+      ]},
+      {phase:'After Start', items:[
+        ['Anti Ice','As Rqrd'],['ECAM Status','Checked'],['Pitch Trim','% Set'],['Rudder Trim','Zero'],
+      ]},
+      {phase:'Before Takeoff', items:[
+        ['Flt Control','Checked (Both)'],['Flt Instruments','Checked (Both)'],['Briefing','Confirmed'],['Flaps Setting','Conf ___ (Both)'],
+        ['V1, VR, V2 Flx Temp','Checked (Both)'],['Transponder (ATC)','Set'],['ECAM Memo','To No Blue'],['Takeoff Rwy','Confirmed (Both)'],
+        ['Cabin','Advise'],['Eng Mode Sel','As Rqrd'],['TCAS','TA/RA'],['Packs','As Rqrd'],
+      ]},
+      {phase:'After Takeoff', items:[
+        ['Landing Gear','Up'],['Flaps','Retracted'],['Packs','On'],['Baro Ref','Standard Set (Both)'],
+      ]},
+      {phase:'Approach', items:[
+        ['Briefing','Confirmed'],['ECAM Status','Checked'],['Seat Belts','On'],['Baro Ref','Set (Both)'],['Minimum','Set (Both)'],['Eng Mod Sel','As Rqrd'],
+      ]},
+      {phase:'Landing', items:[
+        ['A / Thr','Speed / Off'],['Go-Around Alt','Set'],['Autobrake','As Rqrd'],
+        ['ECAM Memo','Ldg No Blue',['L/G Down','Signs On','Cabin Ready','Splrs Arm','Flaps Set']],
+      ]},
+      {phase:'Parking', items:[
+        ['APU Bleed','As Rqrd'],['Engines','Off'],['Seat Belts','Off'],['External Lights','As Rqrd'],['Fuel Pumps','Off'],
+        ['Park Brk and Chocks','As Rqrd'],['Mobile Phone','On'],['Transponder','Stby 2000'],['Radar / PWS','Off'],
+        ['Consider Heavy Rain',''],['Extract','Ovrd'],
+      ]},
+      {phase:'Securing the Aircraft', items:[
+        ['ADIRS','Off'],['Oxygen','Off'],['APU Bleed','Off'],['Emer Exit Lt','Off'],['No Smoking','Off'],['APU and Bat','Off'],['Consider Cold Weather',''],
+      ]},
+    ]},
+
+  { id:'a340', name:'A340', maker:'Airbus', desc:'Widebody · A340-600', accent:'#ffb43d',
+    lists:[
+      {phase:'Before Start', items:[
+        ['Cockpit Prep','Completed (Both)'],['Gear Pins and Covers','Removed'],['Signs','On / Auto'],['ADIRS','Nav'],
+        ['Fuel Quantity','___ kg/lb'],['TO Data','Set (Both)'],['Baro Ref','Set (Both)'],['Windows / Doors','Closed (Both)'],
+        ['Beacon','On'],['Thr Levers','Idle'],['Parking Brake','As Rqrd'],
+      ]},
+      {phase:'After Start', items:[
+        ['Anti Ice','As Rqrd'],['ECAM Status','Checked'],['Trims','Set'],
+      ]},
+      {phase:'Before Takeoff', items:[
+        ['Flight Controls','Checked (Both)'],['Flt Inst','Checked (Both)'],['Briefing','Confirmed'],['Flaps','Set (Both)'],
+        ['V1, VR, V2 / Flx Temp','Set (Both)'],['ATC','Set'],
+        ['ECAM Memo','To No Blue',['Auto Brk Max','Signs On','Cabin Ready','Splrs Arm','Flaps TO','TO Config Norm']],
+        ['Cabin Crew','Advised'],['Lights','On'],['Packs','On APU / Off'],['Radar / TCAS / PWS','Set & Auto'],
+      ]},
+      {phase:'After Takeoff / Climb', items:[
+        ['Ldg Gear','Up'],['Flaps','Retracted'],['Packs / APU','On / Off'],['Baro Ref','Set (Both)'],
+      ]},
+      {phase:'Approach', items:[
+        ['Briefing','Confirmed'],['ECAM Status','Checked'],['Seat Belts','On'],['Minimum','Set (Both)'],['Baro Ref','QNH Set (Both)'],
+      ]},
+      {phase:'Landing', items:[
+        ['A / Thr','Speed / Off'],['Autobrake','As Rqrd'],
+        ['ECAM Memo','Ldg No Blue',['Ldg Gear Dn','Signs On','Cabin Ready','Splrs Arm','Flaps Set']],
+        ['Cabin Crew','Advised'],
+      ]},
+      {phase:'After Landing', items:[
+        ['Flaps','Retracted'],['Spoilers','Disarmed'],['Radar','Off'],['Predictive Windshear System','Off'],['APU','Start'],
+      ]},
+      {phase:'Parking', items:[
+        ['APU Bleed','On'],['Engines','Off'],['Seat Belts','Off'],['Ext Lt','As Rqrd'],['Fuel Pumps','Off'],['Park Brk and Chocks','As Rqrd'],
+      ]},
+      {phase:'Securing the Aircraft', items:[
+        ['TCAS','Stby'],['ADIRS','Off'],['Oxygen','Off'],['APU Bleed','As Rqrd'],['Emer Exit Lt','Off'],['No Smoking','Off'],
+        ['Bat 1 + 2 + APU Bat','As Rqrd'],['Tech Log','Completed'],
+      ]},
+      {phase:'On Ground Emer / Evacuation', emer:true, items:[
+        ['Aircraft / Parking Brk','Stop / On'],['ATC (VHF 1)','Notify'],
+        ['ΔP (if Man Cab Pr Used)','Check Zero',['If not zero: select manual mode, V/S full up to open outflow valve']],
+        ['All Eng Master','Off'],['Fire P/Bs (Eng and APU)','Push'],['Agents (Eng and APU)','Discharge'],
+        ['Evacuation','Initiate'],['Bat 1 and 2','Off'],
+      ]},
+    ]},
+
+  { id:'b737', name:'737', maker:'Boeing', desc:'Narrowbody · 737 NG / MAX', accent:'#6f9bff',
+    lists:[
+      {phase:'Preflight', items:[
+        ['Oxygen','Tested 100%'],['ACARS','Initialised'],['Nav Transfer Switches','Normal'],['Yaw Damper','On'],
+        ['Emergency Exit Lights','Armed'],['Window Heat','On'],['Press Mode Selector','Auto'],['Flight Instruments','Hdg ___ Alt ___'],
+        ['GPS','Set Nav'],['Parking Brake','Set'],['Eng Start Levers','Cutoff'],['Voice Recorder','On'],
+      ]},
+      {phase:'Before Start', items:[
+        ['Flight Deck Door','Closed & Locked'],['Doors','Closed'],['Fuel','___ kg/lbs · Pumps On'],['Pax Signs','On'],
+        ['Windows','Closed & Locked'],['MCP','V2 ___ Hdg ___ Alt ___'],['Takeoff Speeds','V1 ___ VR ___ V2 ___'],['CDU Preflight','Completed'],
+        ['Rudder & Aileron Trim','Free & Zero'],['Taxi & Takeoff Briefing','Confirmed'],['Anti Collision Lights','On'],
+      ]},
+      {phase:'Before Taxi', items:[
+        ['Generators','On'],['Probe Heat','On'],['Anti Ice','As Rqrd'],['Isolation Valve','Auto Closed'],['Eng Start Switches','Cont'],
+        ['Pressurization','Packs On · Flt Auto'],['Autothrottle','Armed'],['Recall','Checked'],['Autobrake','RTO'],
+        ['Eng Start Levers','Idle Detent'],['Flight Controls','Checked'],['Ground Equipment','Clear · Hand Sig'],
+      ]},
+      {phase:'Before Takeoff', items:[
+        ['Flaps','___ Grn Light'],['Stabilizer Trim','___ Units'],['Strobe Lights','On'],
+      ]},
+      {phase:'After Takeoff', items:[
+        ['Engine Bleeds','On'],['Packs','Auto'],['Landing Gear','Up & Off'],['Flaps','Up · No Light'],
+      ]},
+      {phase:'Descent', items:[
+        ['Pressurization','Ldg Alt ___'],['Recall','Checked'],['Landing Perf Calc','Done'],['Autobrake','Set ___'],
+        ['Landing Data','Vref ___ Minimums ___'],['Approach Briefing','Completed'],
+      ]},
+      {phase:'Approach', items:[
+        ['Altimeters','___ hPa/inHg'],['Nav Aids','Set'],
+      ]},
+      {phase:'Landing', items:[
+        ['Eng Start Switches','Cont'],['Speedbrake','Armed'],['Landing Gear','Down · 3 Green'],['Flaps','___ Grn Light'],['Landing Rwy','___ Confirmed'],
+      ]},
+      {phase:'Parking', items:[
+        ['Fuel Pumps','Off'],['Probe Heat','Off'],['Hydraulic Panel','Set'],['Flaps','Up'],['Parking Brake','Set'],
+        ['Eng Start Levers','Cutoff'],['Weather / Terrain Radar','Off'],['Transponder','Off'],
+      ]},
+    ]},
+
+  { id:'b757', name:'757 / 767', maker:'Boeing', desc:'Narrow/Widebody · 757 / 767', accent:'#9b8cff',
+    lists:[
+      {phase:'Preflight', items:[
+        ['Oxygen','Tested 100%'],['IRS','Off to Nav'],['Hydraulic Panel','Set'],['Air Conditioning','On'],['Pressurization','On'],
+        ['Window Heat','On'],['Flight Instruments','Hdg ___ Alt ___'],['Throttles','Idle'],['Fuel Ctrl Switches','Cutoff'],
+        ['Gear Pin','Removed'],['Parking Brake','Set'],
+      ]},
+      {phase:'Before Start', items:[
+        ['Fuel','___ kgs · Pumps On'],['Windows','Closed and Locked'],['Passenger Signs','On'],['Doors','Closed & Armed'],
+        ['MCP','V2 ___ Hdg ___ Alt ___'],['T/O Thrust','Sel Temp ___ · ___ K'],['T/O Speeds','V1 ___ VR ___ V2 ___'],['CDU Preflight','Completed'],
+        ['Trim','___ Units Up/Down · 0.0'],['Taxi and T/O Briefing','Completed'],['Anti Collision Light (Red)','On'],
+      ]},
+      {phase:'After Start', items:[
+        ['Probe Heat','On'],['Anti-Ice','As Rqrd'],['L and R Isolation Valve','Off'],['Fuel Ctrl Switches','Run & Locked'],['Flight Deck Door','Clsd & Locked'],
+      ]},
+      {phase:'Before Taxi', items:[
+        ['Recall','Checked'],['Flt Ctrls','Checked'],['Flaps','___ Set'],['Autobrake','RTO'],['Speedbrake Lever','Down Detent'],['Ground Equipment','Clear'],
+      ]},
+      {phase:'Before Takeoff', items:[
+        ['T/O Briefing','Reviewed'],['Cabin','Secured'],['Landing Lights','On'],
+      ]},
+      {phase:'After Takeoff', items:[
+        ['Landing Gear','Up & Off'],['Flaps','Up'],['Altimeters','Set Std'],['Above FL100 · Lights','Ldg / Taxi / Logo Off'],
+      ]},
+      {phase:'Descent', items:[
+        ['Pressurization','Ldg Alt ___'],['Passenger Signs','On'],['Recall','Checked'],['Autobrake','Set ___'],
+        ['Landing Data','Vref ___ Minimums ___'],['Approach Briefing','Reviewed'],
+      ]},
+      {phase:'Approach', items:[
+        ['Altimeters','QNH ___ Set'],['Nav Aids','Set'],
+      ]},
+      {phase:'Landing', items:[
+        ['Cabin','Secured'],['Speedbrake Lever','Armed'],['Landing Gear','Down Detent'],['Flaps','___ Set'],
+      ]},
+      {phase:'After Landing', items:[
+        ['Anti-Ice','As Rqrd'],['APU','Started'],['Autobrake','Off'],['Speedbrake Lever','Down Detent'],['Flaps','Up'],['Weather Radar','Off'],
+      ]},
+      {phase:'Shutdown', items:[
+        ['Fuel Pumps','Off'],['Probe Heat / Anti-Ice','Off'],['Hydraulic Panel','Set'],['Parking Brake','Set'],['Fuel Ctrl Switches','Cutoff'],
+      ]},
+    ]},
+];
+
+/* ---------- state (persisted to device) ---------- */
+const STORE_KEY = 'efb.checklist.v1';
+const state = { ac:null, list:null, done:{} };
+const view = document.getElementById('view');
+const keyOf = (ac,li,it)=>`${ac}.${li}.${it}`;
+const acById = id => FLEET.find(f=>f.id===id);
+
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state.done)); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(STORE_KEY); if(r) state.done=JSON.parse(r)||{}; }catch(e){ state.done={}; } }
+
+function listProgress(ac,li){
+  const items = acById(ac).lists[li].items;
+  let n=0; items.forEach((_,i)=>{ if(state.done[keyOf(ac,li,i)]) n++; });
+  return {n, total:items.length};
+}
+function vibrate(ms){ if(navigator.vibrate) try{navigator.vibrate(ms);}catch(e){} }
+
+function render(){
+  if(state.ac==null) return renderHome();
+  if(state.list==null) return renderAircraft();
+  return renderChecklist();
+}
+
+function renderHome(){
+  const tiles = FLEET.map(f=>`
+    <button class="tile fade" style="--accent:${f.accent}" onclick="openAircraft('${f.id}')">
+      <span class="bar"></span><span class="reg">${f.maker}</span>
+      <div class="acn">${f.name}</div><div class="acm">${f.maker}</div><div class="acd">${f.desc}</div>
+    </button>`).join('');
+  view.innerHTML = `
+    <div class="head"><h1>Fleet</h1><p class="sub">Select Aircraft</p></div>
+    <div class="wrap"><div class="fleet">${tiles}</div>
+      <p class="note">Checklists transcribed from your uploaded cards. For flight-sim use only —
+      not for real-world procedures or training.<br><br>
+      Tap an item to mark it complete. Your progress is saved automatically on this device; use Reset to clear a checklist.</p></div>`;
+}
+
+function renderAircraft(){
+  const f = acById(state.ac);
+  const rows = f.lists.map((l,i)=>{
+    const p = listProgress(f.id,i), done = p.n===p.total;
+    return `
+    <button class="phase ${l.emer?'emer':''} ${done?'done':''} fade" onclick="openList(${i})">
+      <span class="idx">${String(i+1).padStart(2,'0')}</span>
+      <span class="pname">${l.phase}</span>
+      <span class="pct">${p.n}/${p.total}</span>
+      <span class="tick">${CHECK}</span>
+    </button>`;
+  }).join('');
+  view.innerHTML = `
+    <div class="head">
+      <div class="crumb"><button class="back" onclick="goHome()">${ARROW} Fleet</button><span class="ctx">${f.maker}</span></div>
+      <h1>${f.name}</h1><p class="sub">Select Checklist</p>
+    </div>
+    <div class="wrap"><div class="phases">${rows}</div></div>`;
+}
+
+function renderChecklist(){
+  const f = acById(state.ac), l = f.lists[state.list];
+  const p = listProgress(f.id,state.list), pct = Math.round(p.n/p.total*100);
+  const all = p.n===p.total, last = state.list >= f.lists.length-1;
+  const emerStyle = l.emer ? 'style="--grn:#ff5c5c;--grn-deep:#7a1f1f"' : '';
+
+  const rows = l.items.map((it,i)=>{
+    const on = !!state.done[keyOf(f.id,state.list,i)];
+    const resp = it[1] ? `<span class="resp">${it[1]}</span>` : '';
+    const subs = it[2] ? `<div class="subs">${it[2].map(s=>`<span>‣ ${s}</span>`).join('')}</div>` : '';
+    return `
+    <div class="item ${on?'on':''}" onclick="toggle(${i})">
+      <div class="row"><span class="box">${CHECK}</span>
+        <span class="lbl"><span class="chal">${it[0]}</span><span class="lead"></span>${resp}</span>
+      </div>${subs}
+    </div>`;
+  }).join('');
+
+  view.innerHTML = `
+    <div class="head">
+      <div class="crumb"><button class="back" onclick="openAircraft('${f.id}')">${ARROW} ${f.name}</button>
+        <span class="ctx">${String(state.list+1).padStart(2,'0')} / ${String(f.lists.length).padStart(2,'0')}</span></div>
+      <h1>${l.phase}</h1><p class="sub">${p.n} of ${p.total} complete</p>
+      <div class="pbar" ${emerStyle}><i style="width:${pct}%"></i></div>
+    </div>
+    <div class="wrap" ${emerStyle}>
+      <div class="items">${rows}</div>
+      <div class="complete ${all?'show':''}">
+        <div class="ct">${l.phase} ·· Complete</div>
+        <div class="cs">${last?'Final checklist':'Tap Next for the following phase'}</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="resetList()">Reset</button>
+        <button class="btn primary" ${last?'disabled':''} onclick="nextList()">Next ${ARROW_R}</button>
+      </div>
+    </div>`;
+}
+
+function goHome(){ state.ac=null; state.list=null; render(); }
+function openAircraft(id){ state.ac=id; state.list=null; render(); }
+function openList(i){ state.list=i; render(); }
+function toggle(i){ const k=keyOf(state.ac,state.list,i); const now=!state.done[k]; if(now) state.done[k]=true; else delete state.done[k]; vibrate(now?12:0); save(); render(); }
+function resetList(){ const f=acById(state.ac); f.lists[state.list].items.forEach((_,i)=>{ delete state.done[keyOf(state.ac,state.list,i)]; }); vibrate(8); save(); render(); }
+function nextList(){ const f=acById(state.ac); if(state.list<f.lists.length-1){ state.list++; render(); window.scrollTo(0,0); } }
+
+function tick(){ const d=new Date();
+  document.getElementById('clock').textContent=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+'Z'; }
+tick(); setInterval(tick,15000);
+load();
+render();
+</script>
+</body>
+</html>
