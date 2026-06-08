@@ -106,6 +106,62 @@
   .note{font-size:10.5px;line-height:1.7;color:var(--txt-faint);letter-spacing:.05em;text-align:center;padding:22px 24px 28px;border-top:1px solid var(--line-soft);margin-top:8px;}
   .fade{animation:fade .22s ease;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  /* ===== bottom tab bar ===== */
+  .wrap{padding-bottom:104px;}
+  #tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);
+    background:linear-gradient(0deg,var(--bg) 55%,rgba(10,14,16,.65));backdrop-filter:blur(8px);}
+  #tabbar button{flex:1;max-width:240px;appearance:none;font-family:var(--mono);background:transparent;border:1px solid transparent;
+    color:var(--txt-faint);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 10px;border-radius:11px;
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:.15s;}
+  #tabbar button svg{width:21px;height:21px;}
+  #tabbar button.active{color:var(--grn);background:var(--panel);border-color:var(--grn-deep);}
+  #tabbar button:active{transform:scale(.97);}
+
+  /* ===== briefing ===== */
+  .bcard{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:16px;margin-top:12px;}
+  .bcard.sb,.bcard.sum{background:linear-gradient(180deg,var(--panel-2),var(--panel));}
+  .bcardhead{display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt);margin-bottom:4px;}
+  .bdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .bdot.dep{background:var(--grn);box-shadow:0 0 8px var(--grn);}
+  .bdot.arr{background:var(--amb);box-shadow:0 0 8px var(--amb);}
+  .sbrow{display:flex;gap:8px;margin-top:10px;}
+  .binput{width:100%;font-family:var(--mono);font-size:13px;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:9px;padding:11px 12px;letter-spacing:.04em;}
+  .binput::placeholder{color:var(--txt-faint);}
+  .binput:focus{outline:none;border-color:var(--grn-deep);}
+  .sbrow .binput{flex:1;}
+  .sbbtn{flex:0 0 auto;width:auto;padding:11px 16px;}
+  .bstatus{font-size:11px;letter-spacing:.05em;color:var(--txt-dim);margin-top:10px;min-height:14px;}
+  .bstatus.err{color:var(--amb);}
+  .bhint{font-size:12px;line-height:1.7;color:var(--txt-dim);margin:2px 2px 0;}
+  .brows{display:flex;flex-direction:column;margin:10px 0 2px;}
+  .brow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft);}
+  .brow:last-child{border-bottom:none;}
+  .blbl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-faint);flex:0 0 36%;}
+  .bval{font-size:13px;color:var(--txt);letter-spacing:.03em;flex:1;word-break:break-word;}
+  .sum .route{font-size:27px;font-weight:700;letter-spacing:.06em;}
+  .sum .route span{color:var(--txt-faint);margin:0 7px;}
+  .sum .callsign{font-size:12px;letter-spacing:.1em;color:var(--txt-dim);text-transform:uppercase;margin:5px 0 2px;}
+  .wx{margin:11px 0 0;}
+  .wxlbl{font-size:10px;letter-spacing:.18em;color:var(--txt-faint);text-transform:uppercase;}
+  .wx code{display:block;margin-top:5px;background:var(--bg);border:1px solid var(--line-soft);border-radius:8px;padding:9px 10px;
+    font-family:var(--mono);font-size:11.5px;line-height:1.6;color:#7fd4dd;white-space:pre-wrap;word-break:break-word;}
+  .bedit{display:block;margin-top:12px;}
+  .bedit .blbl{display:block;margin-bottom:6px;flex:none;}
+  .barea{resize:vertical;min-height:42px;line-height:1.5;}
+  .blink{display:flex;align-items:center;gap:10px;margin-top:14px;text-decoration:none;
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim);
+    border:1px solid var(--line);border-radius:11px;padding:12px 13px;transition:.15s;line-height:1.4;}
+  .blink:active{transform:scale(.98);background:var(--panel-2);}
+  .blink svg{width:16px;height:16px;flex:0 0 auto;color:#9b8cff;}
+  .blink b{color:#b6a9ff;font-weight:400;}
+  .wxbtn{width:100%;margin-top:10px;}
+  .notambox{margin-top:6px;max-height:240px;overflow:auto;border:1px solid var(--line-soft);border-radius:8px;background:var(--bg);}
+  .notam{font-family:var(--mono);font-size:11px;line-height:1.55;color:var(--txt-dim);padding:9px 10px;border-bottom:1px solid var(--line-soft);white-space:pre-wrap;word-break:break-word;}
+  .notam:last-child{border-bottom:none;}
+  .bnotamhint{font-size:10.5px;color:var(--txt-faint);margin-top:10px;letter-spacing:.04em;}
 </style>
 </head>
 <body>
@@ -113,6 +169,16 @@
   <div class="strip"><span class="dot"></span><span>EFB · CHECKLIST</span><span class="sep"></span><b id="clock">--:--Z</b></div>
   <div id="view"></div>
 </div>
+<nav id="tabbar">
+  <button data-tab="checklists" class="active" onclick="setTab('checklists')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.2 1.2L7 5"/><path d="M3.5 12l1.2 1.2L7 11"/><path d="M3.5 18l1.2 1.2L7 17"/></svg>
+    Checklists
+  </button>
+  <button data-tab="briefing" onclick="setTab('briefing')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3.5h6V6H9z"/><path d="M9 11h6M9 15h4"/></svg>
+    Briefing
+  </button>
+</nav>
 
 <script>
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
@@ -324,13 +390,16 @@ const FLEET = [
 
 /* ---------- state (persisted to device) ---------- */
 const STORE_KEY = 'efb.checklist.v1';
-const state = { ac:null, list:null, done:{} };
+const BRIEF_KEY = 'efb.briefing.v1';
+const state = { tab:'checklists', ac:null, list:null, done:{}, brief:{ user:'', ofp:null, notes:{}, live:{} } };
 const view = document.getElementById('view');
 const keyOf = (ac,li,it)=>`${ac}.${li}.${it}`;
 const acById = id => FLEET.find(f=>f.id===id);
 
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state.done)); }catch(e){} }
 function load(){ try{ const r=localStorage.getItem(STORE_KEY); if(r) state.done=JSON.parse(r)||{}; }catch(e){ state.done={}; } }
+function saveBrief(){ try{ localStorage.setItem(BRIEF_KEY, JSON.stringify(state.brief)); }catch(e){} }
+function loadBrief(){ try{ const r=localStorage.getItem(BRIEF_KEY); if(r){ const b=JSON.parse(r)||{}; state.brief={ user:b.user||'', ofp:b.ofp||null, notes:b.notes||{}, live:b.live||{} }; } }catch(e){} }
 
 function listProgress(ac,li){
   const items = acById(ac).lists[li].items;
@@ -340,6 +409,7 @@ function listProgress(ac,li){
 function vibrate(ms){ if(navigator.vibrate) try{navigator.vibrate(ms);}catch(e){} }
 
 function render(){
+  if(state.tab==='briefing') return renderBriefing();
   if(state.ac==null) return renderHome();
   if(state.list==null) return renderAircraft();
   return renderChecklist();
@@ -424,10 +494,251 @@ function toggle(i){ const k=keyOf(state.ac,state.list,i); const now=!state.done[
 function resetList(){ const f=acById(state.ac); f.lists[state.list].items.forEach((_,i)=>{ delete state.done[keyOf(state.ac,state.list,i)]; }); vibrate(8); save(); render(); }
 function nextList(){ const f=acById(state.ac); if(state.list<f.lists.length-1){ state.list++; render(); window.scrollTo(0,0); } }
 
+/* ---------- briefing (SimBrief) ---------- */
+function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtSec(s){ s=parseInt(s||0,10); if(!s) return ''; const h=Math.floor(s/3600), m=Math.round((s%3600)/60); return h+':'+String(m).padStart(2,'0'); }
+function notamList(ap){
+  let arr = ap && ap.notam ? ap.notam : [];
+  if(!Array.isArray(arr)) arr=[arr];
+  return arr.map(n=>{
+    if(!n) return '';
+    const id=String(n.notam_id||'').trim();
+    const txt=String(n.notam_text||n.text||n.notam_message||'').trim();
+    return (id?('['+id+'] '):'')+txt;
+  }).filter(s=>s.replace(/^\[[^\]]*\]/,'').trim().length>1);
+}
+function bval(id){ return state.brief.notes[id]||''; }
+function setNote(id,v){ state.brief.notes[id]=v; saveBrief(); }
+
+function parseSidStar(d){
+  let fixes = d && d.navlog && d.navlog.fix ? d.navlog.fix : [];
+  if(!Array.isArray(fixes)) fixes=[fixes];
+  let sid='', star='';
+  for(const f of fixes){
+    if(!f || String(f.is_sid_star||'')!=='1') continue;
+    const via=String(f.via_airway||'').trim();
+    if(!via || via.toUpperCase()==='DCT') continue;
+    if((f.stage||'')==='CLB'){ if(!sid) sid=via; }
+    else if((f.stage||'')==='DSC'){ star=via; }
+  }
+  return {sid,star};
+}
+function extractOFP(d){
+  const g=d.general||{}, o=d.origin||{}, de=d.destination||{}, ac=d.aircraft||{}, w=d.weights||{}, f=d.fuel||{}, t=d.times||{}, p=d.params||{}, atc=d.atc||{};
+  let altn=d.alternate; if(Array.isArray(altn)) altn=altn[0]; altn=altn||{};
+  const cf=parseInt(g.initial_altitude||0,10);
+  const cruise=cf?(cf>=18000?('FL'+Math.round(cf/100)):(cf+' ft')):'';
+  const ss=parseSidStar(d);
+  return {
+    origNotams: notamList(o), destNotams: notamList(de), altnNotams: notamList(altn),
+    callsign: atc.callsign || ((g.icao_airline||'')+(g.flight_number||'')) || '',
+    acType: ac.icaocode||ac.icao_code||'', acReg: ac.reg||'',
+    origIcao:o.icao_code||'', origName:o.name||'', origRwy:o.plan_rwy||'', origTransAlt:o.trans_alt||'', origElev:o.elevation||'', origMetar:o.metar||'', origTaf:o.taf||'',
+    destIcao:de.icao_code||'', destName:de.name||'', destRwy:de.plan_rwy||'', destTransLevel:de.trans_level||'', destElev:de.elevation||'', destMetar:de.metar||'', destTaf:de.taf||'',
+    altnIcao:altn.icao_code||'', altnRwy:altn.plan_rwy||'', altnMetar:altn.metar||'',
+    sid:ss.sid, star:ss.star,
+    route:g.route||'', cruise:cruise, costindex:g.costindex||'', distance:g.route_distance||g.air_distance||'',
+    ete:fmtSec(t.est_time_enroute), units:(p.units||'').toUpperCase(),
+    blockFuel:f.plan_ramp||'', zfw:w.est_zfw||'', tow:w.est_tow||'', ldw:w.est_ldw||''
+  };
+}
+
+function dataRows(pairs){
+  return '<div class="brows">'+pairs.map(p=>`<div class="brow"><span class="blbl">${p[0]}</span><span class="bval">${escapeHtml(p[1]||'—')}</span></div>`).join('')+'</div>';
+}
+function wxBlock(label,text){ return `<div class="wx"><span class="wxlbl">${label}</span><code>${escapeHtml(text)}</code></div>`; }
+function effWx(icao, ofpMetar, ofpTaf){
+  const live = state.brief.live && state.brief.live[icao];
+  const metar = (live && live.metar) ? live.metar : ofpMetar;
+  let html='';
+  if(metar) html += wxBlock('METAR · '+((live&&live.metar)?('LIVE '+(live.t||'')):'OFP'), metar);
+  if(ofpTaf) html += wxBlock('TAF · OFP', ofpTaf);
+  return {html, metar};
+}
+function windComp(metar, rwy){
+  if(!metar || !rwy) return '';
+  const digits=String(rwy).replace(/[^\d]/g,'').slice(0,2);
+  if(digits==='') return '';
+  const rwyHdg=(parseInt(digits,10)%36)*10;
+  const m=String(metar).match(/\b(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?KT\b/);
+  if(!m) return '';
+  const spd=parseInt(m[2],10);
+  if(m[1]==='VRB') return 'Variable '+spd+' kt';
+  if(spd===0) return 'Calm';
+  const ang=(((parseInt(m[1],10)-rwyHdg)+540)%360)-180;
+  const rad=ang*Math.PI/180;
+  const head=Math.round(spd*Math.cos(rad)), cross=Math.round(spd*Math.sin(rad));
+  const along = head>=0 ? ('HW '+head) : ('TW '+Math.abs(head));
+  const side = cross>0?' R':(cross<0?' L':'');
+  let s = along+' · XW '+Math.abs(cross)+side;
+  if(m[3]){ const gx=Math.round(parseInt(m[3],10)*Math.sin(rad)); s+=' (gust XW '+Math.abs(gx)+')'; }
+  return s;
+}
+function notamBlock(list){
+  if(!list || !list.length) return '';
+  const items=list.map(t=>`<div class="notam">${escapeHtml(t)}</div>`).join('');
+  return `<div class="wx"><span class="wxlbl">NOTAMs · ${list.length}</span><div class="notambox">${items}</div></div>`;
+}
+function copyIcao(ic){ try{ if(ic && navigator.clipboard) navigator.clipboard.writeText(ic); }catch(e){} }
+/* Best-effort deep link to BlackBox711's web app. The app doesn't publish its URL
+   scheme, so this is a guess based on its "Dep."/"Arr." fields. If it turns out to
+   use a different key (e.g. icao=) or a #hash, change BB_PARAM below — one edit. */
+const BB_BASE='https://app.blackbox711.com/';
+const BB_PARAM={dep:'dep', arr:'arr'};
+function bbUrl(ic,kind){
+  if(!ic) return BB_BASE;
+  const key=BB_PARAM[kind]||'dep';
+  return BB_BASE+'?'+key+'='+encodeURIComponent(ic);
+}
+function bbLink(icao,kind){
+  const ic=(icao||'').toUpperCase();
+  const tail = ic ? `open <b>${escapeHtml(ic)}</b> &middot; ICAO copied` : 'EOSID &middot; NADP &middot; MSA';
+  return `<a class="blink" href="${bbUrl(ic,kind)}" target="_blank" rel="noopener"${ic?` onclick="copyIcao('${ic}')"`:''}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-9 9"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+    <span>BlackBox711 &mdash; ${tail}</span></a>`;
+}
+function editField(id,label,ph){ return `<label class="bedit"><span class="blbl">${label}</span><input class="binput" data-note="${id}" value="${escapeHtml(bval(id))}" placeholder="${ph||''}" autocapitalize="characters" autocorrect="off" spellcheck="false"></label>`; }
+function editArea(id,label){ return `<label class="bedit"><span class="blbl">${label}</span><textarea class="binput barea" data-note="${id}" rows="2" placeholder="—">${escapeHtml(bval(id))}</textarea></label>`; }
+
+function ofpSummaryHTML(o){
+  return `<div class="bcard sum">
+    <div class="route">${escapeHtml(o.origIcao||'????')} <span>→</span> ${escapeHtml(o.destIcao||'????')}</div>
+    <div class="callsign">${escapeHtml([o.callsign,o.acType,(o.acReg?'('+o.acReg+')':'')].filter(Boolean).join(' '))}</div>
+    ${dataRows([
+      ['Route',o.route],['Cruise',o.cruise],['Cost Index',o.costindex],
+      ['Distance',o.distance?o.distance+' nm':''],['ETE',o.ete],
+      ['Block Fuel',o.blockFuel?(o.blockFuel+' '+o.units):''],
+      ['ZFW / TOW / LDW',[o.zfw,o.tow,o.ldw].filter(Boolean).join(' / ')],
+    ])}
+  </div>`;
+}
+function depCardHTML(o){
+  const icao=o?o.origIcao:'';
+  const dw = o ? effWx(icao, o.origMetar, o.origTaf) : {html:'',metar:''};
+  const wc = o ? windComp(dw.metar, o.origRwy) : '';
+  const pairs = o ? [
+    ['Airport', o.origName||o.origIcao],
+    ['Planned RWY', o.origRwy],
+    ['Planned SID', o.sid || '— (select a SID in SimBrief)'],
+  ] : [];
+  if(wc) pairs.push(['Wind Component', wc]);
+  const rows = o ? dataRows(pairs) : '';
+  const notams = o ? notamBlock(o.origNotams) : '';
+  const nhint = (o && (!o.origNotams||!o.origNotams.length)) ? `<div class="bnotamhint">No NOTAMs in OFP — enable NOTAMs in SimBrief to show them here.</div>` : '';
+  return `<div class="bcard">
+    <div class="bcardhead"><span class="bdot dep"></span>Departure${icao?' · '+escapeHtml(icao):''}</div>
+    ${rows}
+    ${editField('dep_init_alt','Initial Cleared Altitude','set on clearance')}
+    ${editField('dep_thr_red','Thrust Reduction Alt','e.g. 1500 ft AGL')}
+    ${editField('dep_accel','Acceleration Alt','e.g. 3000 ft AGL')}
+    ${editField('dep_rwymargin','Runway Margin','TODA/ASDA vs required')}
+    ${editField('dep_extra','Extra Fuel / Time','e.g. +2.0t · +25 min')}
+    ${editField('dep_msa','MSA','from charts / BlackBox711')}
+    ${dw.html}
+    ${notams}${nhint}
+    ${editField('dep_nadp','NADP','NADP 1 / NADP 2')}
+    ${editField('dep_eosid','Engine-Out SID (this RWY)','from BlackBox711')}
+    ${bbLink(icao,'dep')}
+  </div>`;
+}
+function arrCardHTML(o){
+  const icao=o?o.destIcao:'';
+  const aw = o ? effWx(icao, o.destMetar, o.destTaf) : {html:'',metar:''};
+  const wc = o ? windComp(aw.metar, o.destRwy) : '';
+  const pairs = o ? [
+    ['Airport', o.destName||o.destIcao],
+    ['Planned RWY', o.destRwy],
+    ['Planned STAR', o.star || '— (select a STAR in SimBrief)'],
+    ['Alternate', o.altnIcao?(o.altnIcao+(o.altnRwy?' · RWY '+o.altnRwy:'')):''],
+  ] : [];
+  if(wc) pairs.push(['Wind Component', wc]);
+  const rows = o ? dataRows(pairs) : '';
+  const notams = o ? notamBlock(o.destNotams) : '';
+  return `<div class="bcard">
+    <div class="bcardhead"><span class="bdot arr"></span>Arrival${icao?' · '+escapeHtml(icao):''}</div>
+    ${rows}
+    ${editField('arr_msa','MSA','from charts / BlackBox711')}
+    ${editField('arr_minima','Minimums','DA/MDA — set on the day')}
+    ${editField('arr_rwymargin','Runway Margin','LDA vs required')}
+    ${editField('arr_extra','Extra Fuel / Time','e.g. +1.5t · +20 min')}
+    ${aw.html}
+    ${notams}
+    ${bbLink(icao,'arr')}
+  </div>`;
+}
+
+function renderBriefing(){
+  const o=state.brief.ofp, user=state.brief.user||'';
+  const body = o
+    ? (ofpSummaryHTML(o)+depCardHTML(o)+arrCardHTML(o))
+    : `<p class="bhint">Enter your SimBrief username (or numeric Pilot ID) and tap Fetch OFP to auto-fill the briefing from your latest flight plan. You can also just fill in the fields below by hand.</p>${depCardHTML(null)}${arrCardHTML(null)}`;
+  view.innerHTML = `
+    <div class="head"><h1>Briefing</h1><p class="sub">Departure &amp; Arrival</p></div>
+    <div class="wrap">
+      <div class="bcard sb">
+        <div class="bcardhead"><span class="bdot" style="background:#9b8cff;box-shadow:0 0 8px #9b8cff"></span>SimBrief</div>
+        <div class="sbrow">
+          <input id="sbuser" class="binput" placeholder="SimBrief username or Pilot ID" value="${escapeHtml(user)}" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="btn primary sbbtn" onclick="doFetch()">Fetch OFP</button>
+        </div>
+        <div id="sbstatus" class="bstatus"></div>
+        ${o?`<button class="btn wxbtn" onclick="refreshWx()">&#8635; Update live weather</button><div id="wxstatus" class="bstatus"></div>`:''}
+      </div>
+      ${body}
+      <div class="actions"><button class="btn" onclick="clearBrief()">Clear Briefing</button></div>
+      <p class="note">SimBrief data is fetched live, then stored on this device so your briefing stays available offline. For sim use only.</p>
+    </div>`;
+  const u=document.getElementById('sbuser'); if(u) u.oninput=e=>{ state.brief.user=e.target.value; saveBrief(); };
+  document.querySelectorAll('[data-note]').forEach(el=>{ el.oninput=()=>setNote(el.getAttribute('data-note'), el.value); });
+}
+
+async function doFetch(){
+  const inp=document.getElementById('sbuser'), st=document.getElementById('sbstatus');
+  const user=(inp?inp.value:'').trim();
+  if(!user){ if(st){ st.textContent='Enter your SimBrief username or Pilot ID first.'; st.className='bstatus err'; } return; }
+  state.brief.user=user; saveBrief();
+  if(st){ st.textContent='Fetching latest OFP…'; st.className='bstatus'; }
+  try{
+    const param=/^\d+$/.test(user) ? 'userid=' : 'username=';
+    const url='https://www.simbrief.com/api/xml.fetcher.php?'+param+encodeURIComponent(user)+'&json=1';
+    const res=await fetch(url,{headers:{'Accept':'application/json'}});
+    const data=await res.json();
+    if(!res.ok || (data&&data.fetch&&/error/i.test(data.fetch.status||''))){
+      const msg=(data&&data.fetch&&data.fetch.status)?data.fetch.status:('Request failed ('+res.status+')');
+      if(st){ st.textContent=msg; st.className='bstatus err'; } return;
+    }
+    state.brief.ofp=extractOFP(data); saveBrief(); render();
+  }catch(e){
+    if(st){ st.textContent='Network error — check your connection and that the username is correct.'; st.className='bstatus err'; }
+  }
+}
+async function refreshWx(){
+  const o=state.brief.ofp, st=document.getElementById('wxstatus');
+  if(!o) return;
+  const ids=[...new Set([o.origIcao,o.destIcao,o.altnIcao].filter(Boolean))];
+  if(!ids.length){ if(st){ st.textContent='No airports to update.'; st.className='bstatus err'; } return; }
+  if(st){ st.textContent='Fetching live METARs…'; st.className='bstatus'; }
+  try{
+    const res=await fetch('https://metar.vatsim.net/'+encodeURIComponent(ids.join(',')));
+    const txt=await res.text();
+    const d=new Date(), t=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+'Z';
+    const live=state.brief.live||{};
+    txt.split('\n').map(l=>l.trim()).filter(Boolean).forEach(line=>{
+      const ic=line.slice(0,4).toUpperCase();
+      if(/^[A-Z]{2}[A-Z0-9]{2}$/.test(ic)) live[ic]={metar:line, t:t};
+    });
+    state.brief.live=live; saveBrief(); render();
+  }catch(e){
+    if(st){ st.textContent='Couldn’t reach VATSIM weather — check your connection.'; st.className='bstatus err'; }
+  }
+}
+function clearBrief(){ state.brief.ofp=null; state.brief.notes={}; state.brief.live={}; saveBrief(); render(); }
+function setTab(t){ state.tab=t; document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t)); render(); window.scrollTo(0,0); }
+
 function tick(){ const d=new Date();
   document.getElementById('clock').textContent=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+'Z'; }
 tick(); setInterval(tick,15000);
-load();
+load(); loadBrief();
 render();
 </script>
 </body>
