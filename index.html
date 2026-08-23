@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0e10">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -107,6 +108,22 @@
   .fade{animation:fade .22s ease;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
+  /* ===== one-page checklist ===== */
+  .clsec{margin-top:24px;}
+  .clsec:first-of-type{margin-top:6px;}
+  .clhead{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--grn);
+    border-bottom:1px solid var(--line);padding:2px 0 8px;margin-bottom:6px;font-weight:600;}
+  .clhead.emer{color:var(--red);}
+  .clitem{display:flex;align-items:baseline;gap:6px;padding:7px 2px;border-bottom:1px solid var(--line-soft);}
+  .clitem:last-child{border-bottom:none;}
+  .clchal{font-size:14px;letter-spacing:.03em;text-transform:uppercase;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
+  .cllead{flex:1;border-bottom:1.5px dotted var(--line);transform:translateY(-3px);min-width:8px;}
+  .clresp{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--amb);white-space:nowrap;flex-shrink:0;}
+  .clsubs{padding:2px 2px 7px 14px;display:flex;flex-wrap:wrap;gap:2px 16px;}
+  .clsubs span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-faint);}
+  .clnote{font-size:11.5px;line-height:1.6;letter-spacing:.02em;color:var(--txt-faint);padding:8px 2px 6px;}
+  .clnhead{color:var(--txt-dim);text-transform:uppercase;letter-spacing:.12em;font-size:10.5px;padding-top:12px;}
+
   /* ===== bottom tab bar ===== */
   .wrap{padding-bottom:104px;}
   #tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;
@@ -166,7 +183,7 @@
 </head>
 <body>
 <div id="app">
-  <div class="strip"><span class="dot"></span><span>EFB · CHECKLIST</span><span class="sep"></span><b id="clock">--:--Z</b></div>
+  <div class="strip"><span class="dot"></span><span>EFB · CHECKLIST</span><span class="sep"></span><b id="ver" style="color:var(--txt-faint);font-weight:400">v7</b><b id="clock" style="margin-left:12px">--:--Z</b></div>
   <div id="view"></div>
 </div>
 <nav id="tabbar">
@@ -224,6 +241,41 @@ const FLEET = [
       {phase:'Securing the Aircraft', items:[
         ['Oxygen','Off'],['Emer Exit Lt','Off'],['EFBs','Off'],['Batteries','Off'],
       ]},
+      {phase:'Single-Engine Taxi Out', items:[
+        ['Brake Accumulator Press','Checked'],
+        ['Engine 1','Start'],
+        ['X Bleed','Open'],
+        ['APU','Bleed'],
+        ['APU','Keep Running'],
+        {note:'Proceed with normal After Start flow, except for status check and engine / wing anti-ice selection.'},
+      ]},
+      {phase:'SE Taxi · Before Releasing Parking Brake', items:[
+        ['Y Elec Pump','On'],
+        {note:'During taxi, proceed with the normal before-takeoff flow, except for flight controls check and autobrake selection.'},
+      ]},
+      {phase:'SE Taxi · Before ENG 2 Start', items:[
+        ['Y Elec Pump','Off'],
+        ['APU Bleed','On'],
+        ['Engine 2','Start'],
+        ['APU','As Rqd'],
+        ['X Bleed','Auto'],
+        {note:'Proceed with anti-ice selection as required, ECAM Status check and After Start checklist.'},
+        ['Flight Controls','Ckd (Both)'],
+        ['Auto Brake','Max'],
+        {note:'Proceed with the Before Takeoff checklist.'},
+      ]},
+      {phase:'Single-Engine Taxi In', items:[
+        ['APU','Start'],
+        {note:'After 3 minutes at idle:', head:true},
+        ['Engine 2','Shut Down'],
+        ['Y Elec Pump','On'],
+        {note:'At parking:', head:true},
+        ['Y Elec Pump','Off'],
+        ['Engine 1','Shut Down'],
+      ]},
+      {phase:'MCDU Prep · DIFSRIP', items:[
+        ['Data',''],['Init - A',''],['F-PLN',''],['Sec F-PLN',''],['Rad Nav',''],['Init - B',''],['Perf',''],
+      ]},
     ]},
 
   { id:'a330', name:'A330', maker:'Airbus', desc:'Widebody · A330-200/300', accent:'#4fd6e0',
@@ -258,6 +310,44 @@ const FLEET = [
       ]},
       {phase:'Securing the Aircraft', items:[
         ['ADIRS','Off'],['Oxygen','Off'],['APU Bleed','Off'],['Emer Exit Lt','Off'],['No Smoking','Off'],['APU and Bat','Off'],['Consider Cold Weather',''],
+      ]},
+      {phase:'Single-Engine Taxi Out (SETO)', items:[
+        {note:'Consider SETO if the estimated taxi time is 15 minutes or greater.'},
+        {note:'To avoid thermal shock and jet blast, operate any engine at no more than 40% N1. If more breakaway thrust is needed, set the parking brake and start the remaining engine.'},
+        {note:'Respect engine warm-up time before takeoff (GE 3 min; RR 5 min if cold, 3 min if warm).'},
+        {note:'Not recommended: slippery taxiways, uphill slopes, GW above 220t, low-visibility ops, strong winds, or when crossing a runway.'},
+        ['Eng 1','Start'],
+        {note:'When ENG 1 is stabilized', head:true},
+        ['X-Bleed','Open'],
+        ['APU Bleed','Off'],
+        ['APU','Keep Running'],
+        ['After Start Normal Proc (except ECAM STS)','Apply'],
+        ['Grnd Equipment','Removed'],
+        ['Taxi Normal Procedure','Apply'],
+        {note:'Delay flight controls check until all engines started. Arm autobrake after the flight controls check.'},
+        ['Eng Warm-Up Time (rem. eng: GE 3min, RR 5min)','Anticipate'],
+        {note:'For ENG 2 start and when taxiing in a straight line', head:true},
+        ['APU Bleed','On'],
+        ['Start Selector','IGN / Start'],
+        ['Eng 2','Start'],
+        {note:'When ENG 2 is stabilized', head:true},
+        ['Chrono (warm-up GE 3min, RR 5min)','Start'],
+        ['Start Selector','Norm'],
+        ['APU','As Rqrd'],
+        ['X-Bleed','Auto'],
+        ['After Start Normal Procedure','Apply'],
+        {note:'ECAM STS check perform. Anti-ice as required.'},
+        ['After Start Checklist','Complete'],
+        ['Flight Controls','Check'],
+        ['Auto Brk','Max'],
+        {note:'Resume normal operations.'},
+      ]},
+      {phase:'Single-Engine Taxi In (SETI)', items:[
+        {note:'Use SETI if the expected taxi-in time is 2 minutes or greater.'},
+        {note:'Not recommended in icing conditions, slippery taxiways, uphill slopes, or at high GW.'},
+        {note:'Observe engine cooldown requirements (GE 3 min, RR 1 min).'},
+        ['APU','Confirm Avail'],
+        ['Eng 2','Shut Down'],
       ]},
     ]},
 
@@ -297,6 +387,37 @@ const FLEET = [
       {phase:'Securing the Aircraft', items:[
         ['TCAS','Stby'],['ADIRS','Off'],['Oxygen','Off'],['APU Bleed','As Rqrd'],['Emer Exit Lt','Off'],['No Smoking','Off'],
         ['Bat 1 + 2 + APU Bat','As Rqrd'],['Tech Log','Completed'],
+      ]},
+      {phase:'Two-Engine Taxi Out', items:[
+        {note:'Except in some conditions (uphill slopes, slippery taxiways, high gross weight) it may be advisable to taxi on two engines. Use caution to avoid excessive jet blast.'},
+        {note:'Use the outer engines to pressurize the green hydraulic system (normal braking + nosewheel steering); consider the inner engines if the outers face an ingestion (FOD) risk.'},
+        {note:'CAUTION: If taxiing on inner engines only, check GREEN ELEC PUMP availability and never move slats/flaps during taxi (nosewheel steering would be lost).'},
+        {note:'Before starting engines, check pressure normal on the BRAKE & ACCU PRESS indicator.'},
+        {note:'If using the parking brake during taxi, switch the blue electric pump ON before starting Engines 1 and 4, then OFF after starting Engines 2 and 3.'},
+        ['Engine 4, then Engine 1','Start'],
+        ['Probe / Window Heat','On'],
+        {note:'Switch on probe and window heating — automatic control from the Engine 2/3 running signal is not available.'},
+        ['After Start Normal Procedure','Apply'],
+        {note:'Keep the APU running (avoids electrical transients, allows galley). Switch APU BLEED off to avoid ingesting engine exhaust into the air conditioning.'},
+        {note:'After all engines started, perform the ECAM Status check, then set engine and/or wing anti-ice as required.'},
+        ['Taxi Normal Procedure','Apply'],
+        {note:'Perform flight controls checks after all engines are started. Do not arm autobrake before the flight controls checks are complete.'},
+        {note:'Before ENG 2 start:', head:true},
+        ['APU Bleed','On'],
+        {note:'No less than 2 minutes before takeoff:', head:true},
+        ['Engine 2, then 3','Start'],
+        ['Probe / Window Heat','Auto'],
+        ['APU','As Rqrd'],
+        {note:'Continue with the After Start procedures: perform the ECAM Status check, then set engine/wing anti-ice as required.'},
+        {note:'Proceed with the After Start checklist.'},
+        ['Flight Controls','Check'],
+        ['Auto Brk','Max'],
+      ]},
+      {phase:'Two-Engine Taxi In', items:[
+        {note:'The flight crew may use the following procedure for taxiing in.'},
+        ['APU','Start'],
+        {note:'No less than 3 minutes after high-thrust operation, and when taxiing straight:', head:true},
+        ['Eng 2 and 3','Shut Down'],
       ]},
       {phase:'On Ground Emer / Evacuation', emer:true, items:[
         ['Aircraft / Parking Brk','Stop / On'],['ATC (VHF 1)','Notify'],
@@ -342,6 +463,23 @@ const FLEET = [
       {phase:'Parking', items:[
         ['Fuel Pumps','Off'],['Probe Heat','Off'],['Hydraulic Panel','Set'],['Flaps','Up'],['Parking Brake','Set'],
         ['Eng Start Levers','Cutoff'],['Weather / Terrain Radar','Off'],['Transponder','Off'],
+      ]},
+      {phase:'Single-Engine Taxi Out', items:[
+        ['Engine 2','Start — normal'],
+        ['APU','Keep Running'],
+        {note:'Generator 2 comes online; the APU continues to supply the left AC buses.'},
+        ['Packs','Auto'],
+        ['ISOL Valve','Closed'],
+        ['Eng 1 Bleed','Off'],
+        ['APU Bleed','On'],
+        ['Eng 2 Bleed','On'],
+        {note:'Complete the After Start checklist with responses applicable to single-engine taxi. Fuel balancing — as needed.'},
+        {note:'When ready to start Engine 1:', head:true},
+        ['Eng 1 Pack','Off'],
+        ['Engine 1','Start — normal'],
+        {note:'Once Engine 1 is running, reconfigure the electrical and air-conditioning systems per normal procedures.'},
+        {note:'Complete the After Start checklist again, then the Before Takeoff checklist to the line.'},
+        {note:'Engine warm-up before takeoff: NG 2 min, MAX 3 min.'},
       ]},
     ]},
 
@@ -389,30 +527,18 @@ const FLEET = [
 ];
 
 /* ---------- state (persisted to device) ---------- */
-const STORE_KEY = 'efb.checklist.v1';
 const BRIEF_KEY = 'efb.briefing.v1';
-const state = { tab:'checklists', ac:null, list:null, done:{}, brief:{ user:'', ofp:null, notes:{}, live:{} } };
+const state = { tab:'checklists', ac:null, brief:{ user:'', ofp:null, notes:{}, live:{} } };
 const view = document.getElementById('view');
-const keyOf = (ac,li,it)=>`${ac}.${li}.${it}`;
 const acById = id => FLEET.find(f=>f.id===id);
 
-function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state.done)); }catch(e){} }
-function load(){ try{ const r=localStorage.getItem(STORE_KEY); if(r) state.done=JSON.parse(r)||{}; }catch(e){ state.done={}; } }
 function saveBrief(){ try{ localStorage.setItem(BRIEF_KEY, JSON.stringify(state.brief)); }catch(e){} }
 function loadBrief(){ try{ const r=localStorage.getItem(BRIEF_KEY); if(r){ const b=JSON.parse(r)||{}; state.brief={ user:b.user||'', ofp:b.ofp||null, notes:b.notes||{}, live:b.live||{} }; } }catch(e){} }
-
-function listProgress(ac,li){
-  const items = acById(ac).lists[li].items;
-  let n=0; items.forEach((_,i)=>{ if(state.done[keyOf(ac,li,i)]) n++; });
-  return {n, total:items.length};
-}
-function vibrate(ms){ if(navigator.vibrate) try{navigator.vibrate(ms);}catch(e){} }
 
 function render(){
   if(state.tab==='briefing') return renderBriefing();
   if(state.ac==null) return renderHome();
-  if(state.list==null) return renderAircraft();
-  return renderChecklist();
+  return renderAircraft();
 }
 
 function renderHome(){
@@ -425,74 +551,32 @@ function renderHome(){
     <div class="head"><h1>Fleet</h1><p class="sub">Select Aircraft</p></div>
     <div class="wrap"><div class="fleet">${tiles}</div>
       <p class="note">Checklists transcribed from your uploaded cards. For flight-sim use only —
-      not for real-world procedures or training.<br><br>
-      Tap an item to mark it complete. Your progress is saved automatically on this device; use Reset to clear a checklist.</p></div>`;
+      not for real-world procedures or training.</p></div>`;
 }
 
 function renderAircraft(){
   const f = acById(state.ac);
-  const rows = f.lists.map((l,i)=>{
-    const p = listProgress(f.id,i), done = p.n===p.total;
-    return `
-    <button class="phase ${l.emer?'emer':''} ${done?'done':''} fade" onclick="openList(${i})">
-      <span class="idx">${String(i+1).padStart(2,'0')}</span>
-      <span class="pname">${l.phase}</span>
-      <span class="pct">${p.n}/${p.total}</span>
-      <span class="tick">${CHECK}</span>
-    </button>`;
+  const secs = f.lists.map(l=>{
+    const items = l.items.map(it=>{
+      if(it && it.note) return `<div class="clnote${it.head?' clnhead':''}">${it.note}</div>`;
+      const resp = it[1] ? `<span class="clresp">${it[1]}</span>` : '';
+      const subs = it[2] ? `<div class="clsubs">${it[2].map(s=>`<span>&#8227; ${s}</span>`).join('')}</div>` : '';
+      return `<div class="clitem"><span class="clchal">${it[0]}</span><span class="cllead"></span>${resp}</div>${subs}`;
+    }).join('');
+    return `<div class="clsec"><div class="clhead ${l.emer?'emer':''}">${l.phase}</div>${items}</div>`;
   }).join('');
   view.innerHTML = `
     <div class="head">
       <div class="crumb"><button class="back" onclick="goHome()">${ARROW} Fleet</button><span class="ctx">${f.maker}</span></div>
-      <h1>${f.name}</h1><p class="sub">Select Checklist</p>
+      <h1>${f.name}</h1><p class="sub">Checklist</p>
     </div>
-    <div class="wrap"><div class="phases">${rows}</div></div>`;
-}
-
-function renderChecklist(){
-  const f = acById(state.ac), l = f.lists[state.list];
-  const p = listProgress(f.id,state.list), pct = Math.round(p.n/p.total*100);
-  const all = p.n===p.total, last = state.list >= f.lists.length-1;
-  const emerStyle = l.emer ? 'style="--grn:#ff5c5c;--grn-deep:#7a1f1f"' : '';
-
-  const rows = l.items.map((it,i)=>{
-    const on = !!state.done[keyOf(f.id,state.list,i)];
-    const resp = it[1] ? `<span class="resp">${it[1]}</span>` : '';
-    const subs = it[2] ? `<div class="subs">${it[2].map(s=>`<span>‣ ${s}</span>`).join('')}</div>` : '';
-    return `
-    <div class="item ${on?'on':''}" onclick="toggle(${i})">
-      <div class="row"><span class="box">${CHECK}</span>
-        <span class="lbl"><span class="chal">${it[0]}</span><span class="lead"></span>${resp}</span>
-      </div>${subs}
-    </div>`;
-  }).join('');
-
-  view.innerHTML = `
-    <div class="head">
-      <div class="crumb"><button class="back" onclick="openAircraft('${f.id}')">${ARROW} ${f.name}</button>
-        <span class="ctx">${String(state.list+1).padStart(2,'0')} / ${String(f.lists.length).padStart(2,'0')}</span></div>
-      <h1>${l.phase}</h1><p class="sub">${p.n} of ${p.total} complete</p>
-      <div class="pbar" ${emerStyle}><i style="width:${pct}%"></i></div>
-    </div>
-    <div class="wrap" ${emerStyle}>
-      <div class="items">${rows}</div>
-      <div class="complete ${all?'show':''}">
-        <div class="ct">${l.phase} ·· Complete</div>
-        <div class="cs">${last?'Final checklist':'Tap Next for the following phase'}</div>
-      </div>
-      <div class="actions">
-        <button class="btn" onclick="resetList()">Reset</button>
-        <button class="btn primary" ${last?'disabled':''} onclick="nextList()">Next ${ARROW_R}</button>
-      </div>
+    <div class="wrap">${secs}
+      <p class="note">For flight-sim use only — not for real-world procedures or training.</p>
     </div>`;
 }
 
-function goHome(){ state.ac=null; state.list=null; render(); }
-function openAircraft(id){ state.ac=id; state.list=null; render(); }
-function openList(i){ state.list=i; render(); }
-function toggle(i){ const k=keyOf(state.ac,state.list,i); const now=!state.done[k]; if(now) state.done[k]=true; else delete state.done[k]; vibrate(now?12:0); save(); render(); }
-function resetList(){ const f=acById(state.ac); f.lists[state.list].items.forEach((_,i)=>{ delete state.done[keyOf(state.ac,state.list,i)]; }); vibrate(8); save(); render(); }
-function nextList(){ const f=acById(state.ac); if(state.list<f.lists.length-1){ state.list++; render(); window.scrollTo(0,0); } }
+function goHome(){ state.ac=null; render(); window.scrollTo(0,0); }
+function openAircraft(id){ state.ac=id; render(); window.scrollTo(0,0); }
 
 /* ---------- briefing (SimBrief) ---------- */
 function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -738,7 +822,7 @@ function setTab(t){ state.tab=t; document.querySelectorAll('#tabbar button').for
 function tick(){ const d=new Date();
   document.getElementById('clock').textContent=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+'Z'; }
 tick(); setInterval(tick,15000);
-load(); loadBrief();
+loadBrief();
 render();
 </script>
 </body>
